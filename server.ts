@@ -15,14 +15,32 @@ process.env.VITE_CONFIG_NATIVE_IGNORE_WARNING = 'true';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const IS_PKG = Boolean((process as any).pkg);
+const APP_DATA_DIR = IS_PKG ? path.dirname(process.execPath) : __dirname;
+
 // Ensure local hard drive database directory exists on shop computer
-const LOCAL_DB_DIR = path.resolve(__dirname, 'local_database');
+const LOCAL_DB_DIR = path.resolve(APP_DATA_DIR, 'local_database');
 const LOCAL_BACKUP_DIR = path.resolve(LOCAL_DB_DIR, 'backups');
 if (!fs.existsSync(LOCAL_DB_DIR)) {
   fs.mkdirSync(LOCAL_DB_DIR, { recursive: true });
 }
 if (!fs.existsSync(LOCAL_BACKUP_DIR)) {
   fs.mkdirSync(LOCAL_BACKUP_DIR, { recursive: true });
+}
+
+// When running as standalone .exe, seed local_database folder next to .exe if empty
+const DEFAULT_DB_DIR = path.resolve(__dirname, 'local_database');
+if (IS_PKG && fs.existsSync(DEFAULT_DB_DIR)) {
+  const defaultFiles = ['products.json', 'transactions.json', 'expenses.json', 'movements.json', 'settings.json', 'profiles.json', 'device_lock.json'];
+  defaultFiles.forEach((file) => {
+    const dest = path.resolve(LOCAL_DB_DIR, file);
+    const src = path.resolve(DEFAULT_DB_DIR, file);
+    if (!fs.existsSync(dest) && fs.existsSync(src)) {
+      try {
+        fs.copyFileSync(src, dest);
+      } catch {}
+    }
+  });
 }
 
 const app = express();
@@ -232,6 +250,17 @@ app.post('/api/prepare-print-slip', (req, res) => {
   }
 });
 
+// Windows Standalone Executable Download Route
+app.get('/download/SA_Brothers_Vendors_POS.exe', (_req, res) => {
+  const exePath = path.resolve(__dirname, 'public', 'download', 'SA_Brothers_Vendors_POS.exe');
+  if (fs.existsSync(exePath)) {
+    res.setHeader('Content-Type', 'application/vnd.microsoft.portable-executable');
+    res.download(exePath, 'SA_Brothers_Vendors_POS.exe');
+  } else {
+    res.status(404).send('Executable is being compiled. Please try again in a few moments.');
+  }
+});
+
 app.get('/print-slip/:receiptNumber', (req, res) => {
   const { receiptNumber } = req.params;
   const entry = recentPrintReceipts.get(receiptNumber);
@@ -367,9 +396,7 @@ A total of **${data.itemsSoldCount || 0} units** were sold across **${data.trans
 
 // Development and Production setup
 async function startServer() {
-  const isProduction = process.env.NODE_ENV === 'production';
-
-  if (!isProduction) {
+  if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: {
@@ -423,6 +450,20 @@ async function startServer() {
 
   const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server listening on http://0.0.0.0:${PORT}`);
+    if (IS_PKG) {
+      console.log('========================================================================');
+      console.log('    SA BROTHERS VENDORS - POINT OF SALE WINDOWS DESKTOP SOFTWARE        ');
+      console.log(`    Running locally on Windows PC at: http://localhost:${PORT}          `);
+      console.log(`    Local Database: ${LOCAL_DB_DIR}                                     `);
+      console.log('    Minimize this console window while using the application.           ');
+      console.log('========================================================================');
+      import('child_process').then(({ exec }) => {
+        const appUrl = `http://localhost:${PORT}`;
+        exec(`start msedge --app="${appUrl}"`, (err) => {
+          if (err) exec(`start ${appUrl}`);
+        });
+      }).catch(() => {});
+    }
   });
 
   server.on('error', (err: any) => {

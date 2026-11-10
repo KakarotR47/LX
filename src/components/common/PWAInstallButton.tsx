@@ -7,9 +7,10 @@ import {
   X,
   ExternalLink,
   Laptop,
-  Terminal,
-  Printer,
-  Sparkles,
+  Check,
+  FileCode,
+  ShieldCheck,
+  HardDrive,
 } from 'lucide-react';
 
 interface PWAInstallButtonProps {
@@ -17,9 +18,27 @@ interface PWAInstallButtonProps {
 }
 
 export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 'topbar' }) => {
-  const { isInstallable, isInstalled, isWindows, install } = usePWAInstall();
+  const { isInstallable, isInstalled, install } = usePWAInstall();
   const [showModal, setShowModal] = useState<boolean>(false);
   const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
+  const [exeDownloading, setExeDownloading] = useState<boolean>(false);
+  const [exeDownloaded, setExeDownloaded] = useState<boolean>(false);
+
+  const handleDownloadExe = () => {
+    setExeDownloading(true);
+    const link = document.createElement('a');
+    link.href = '/download/SA_Brothers_Vendors_POS.exe';
+    link.download = 'SA_Brothers_Vendors_POS.exe';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => {
+      setExeDownloading(false);
+      setExeDownloaded(true);
+      setTimeout(() => setExeDownloaded(false), 5000);
+    }, 1200);
+  };
 
   const handleDownloadLauncher = () => {
     const link = document.createElement('a');
@@ -45,30 +64,19 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
   if (variant === 'topbar') {
     return (
       <>
-        {isInstallable ? (
-          <button
-            onClick={install}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 animate-pulse"
-            title="Click to install as standalone Windows Desktop Software"
-          >
-            <Monitor className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Install Windows App</span>
-          </button>
-        ) : (
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
-            title="Windows Desktop Setup & EXE Guide"
-          >
-            <Laptop className="w-3.5 h-3.5 text-sky-500" />
-            <span className="hidden lg:inline">Windows Software (.exe)</span>
-          </button>
-        )}
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+          title="Download Windows Native Executable (.exe) or Install App"
+        >
+          <Laptop className="w-3.5 h-3.5" />
+          <span>Windows .EXE App</span>
+        </button>
 
         {/* Windows Software Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-xl shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+          <div className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
               <div className="flex items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-2xl border border-sky-200 dark:border-sky-800">
@@ -76,10 +84,13 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <span>Windows Software &amp; Desktop App Setup</span>
+                      <span>Windows Software &amp; Executable (.exe)</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
+                        x64 Windows Ready
+                      </span>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Run SA Brothers Vendors as a native Windows desktop software (.exe)
+                      Run SA Brothers Vendors as a native, self-contained Windows desktop software on Windows 10 &amp; 11
                     </p>
                   </div>
                 </div>
@@ -92,15 +103,63 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
               </div>
 
               <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-                {/* Method 1: Edge/Chrome Native PWA App */}
-                <div className="p-4 rounded-2xl border border-sky-200 dark:border-sky-900/60 bg-sky-50/50 dark:bg-sky-950/20 space-y-2.5">
+                {/* Method 1: DIRECT DOWNLOAD STANDALONE .EXE (PRIMARY) */}
+                <div className="p-5 rounded-2xl border-2 border-sky-500/80 dark:border-sky-500/60 bg-gradient-to-br from-sky-50/80 to-indigo-50/40 dark:from-sky-950/40 dark:to-indigo-950/20 space-y-3 relative overflow-hidden shadow-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-sky-900 dark:text-sky-200 flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">1</span>
-                      Direct 1-Click Browser App Installation (Recommended)
+                    <span className="text-xs font-bold text-sky-950 dark:text-sky-100 flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-black">1</span>
+                      Standalone Native Windows Software (.EXE) — Direct Download
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400 bg-sky-100 dark:bg-sky-900/60 px-2 py-0.5 rounded-full">
-                      Native Windows PWA
+                    <span className="text-[10px] font-bold text-sky-700 dark:text-sky-300 bg-white/80 dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-sky-200 dark:border-sky-800">
+                      ~72 MB • No Setup Needed
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Pre-compiled standalone Windows x64 binary. Double-click to run on any Windows 10/11 shop computer. It automatically initializes the hard-drive database (<code className="text-xs font-mono font-bold bg-white/70 dark:bg-slate-800 px-1 py-0.5 rounded text-sky-600 dark:text-sky-400">local_database/</code>) and opens in an isolated native application window.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1">
+                    <div className="flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>100% Offline &amp; Safe</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <HardDrive className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Auto Saves to Hard Disk</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-1">
+                    <button
+                      onClick={handleDownloadExe}
+                      disabled={exeDownloading}
+                      className="w-full py-3 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                    >
+                      {exeDownloaded ? (
+                        <>
+                          <Check className="w-4 h-4 text-emerald-300" />
+                          <span>Downloaded! Check Your Downloads Folder</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4" />
+                          <span>{exeDownloading ? 'Starting Download...' : 'Download SA_Brothers_Vendors_POS.exe (72 MB)'}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Method 2: Edge/Chrome Native PWA App */}
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center text-[10px]">2</span>
+                      Browser Native App Installation (PWA)
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                      Zero Download Size
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -112,10 +171,10 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
                         install();
                         setShowModal(false);
                       }}
-                      className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer hover:bg-slate-800 dark:hover:bg-slate-100"
                     >
                       <Monitor className="w-4 h-4" />
-                      <span>Install on Windows Now</span>
+                      <span>Install as Desktop App Now</span>
                     </button>
                   ) : (
                     <div className="text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
@@ -124,11 +183,11 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
                   )}
                 </div>
 
-                {/* Method 2: Download Windows Batch / Standalone Launcher */}
+                {/* Method 3: Download Windows Batch / Standalone Launcher */}
                 <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center text-[10px]">2</span>
+                      <span className="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center text-[10px]">3</span>
                       Windows Double-Click Desktop Launcher (.bat)
                     </span>
                   </div>
@@ -138,7 +197,7 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
                   <div className="flex gap-2">
                     <button
                       onClick={handleDownloadLauncher}
-                      className="flex-1 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                      className="flex-1 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>{downloadSuccess ? 'Downloaded!' : 'Download Launcher (.bat)'}</span>
@@ -148,16 +207,17 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
                       className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer"
                       title="Download text instructions on converting to .exe"
                     >
+                      <FileCode className="w-3.5 h-3.5 text-slate-500" />
                       <span>.EXE Guide</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Method 3: Convert to single .exe via Windows IExpress */}
+                {/* Method 4: Convert to single .exe via Windows IExpress */}
                 <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30 space-y-2">
                   <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center text-[10px]">3</span>
-                    How to Convert to a Single-File .EXE (Built-in Windows Tool)
+                    <span className="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center text-[10px]">4</span>
+                    How to Package into a Custom .EXE via Windows IExpress (Built-in)
                   </div>
                   <ol className="text-xs text-slate-600 dark:text-slate-300 list-decimal list-inside space-y-1 pl-1 leading-relaxed">
                     <li>Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono text-[11px]">Win + R</kbd>, type <code className="text-sky-600 font-mono font-bold">iexpress</code> and press Enter.</li>
@@ -190,14 +250,14 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-sky-500 text-white rounded-xl shadow-xs">
-            <Monitor className="w-5 h-5" />
+            <Laptop className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Windows Software &amp; Desktop App Integration
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Run this POS as an offline-capable, standalone Windows application or single-file .exe
+              Run this POS as an offline-capable, standalone Windows application (.exe) or desktop app
             </p>
           </div>
         </div>
@@ -210,7 +270,31 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+        {/* Direct .EXE download card */}
+        <button
+          type="button"
+          onClick={handleDownloadExe}
+          disabled={exeDownloading}
+          className="p-3.5 bg-gradient-to-br from-sky-600 to-indigo-600 text-white rounded-xl text-left transition-all shadow-xs hover:shadow-md flex flex-col justify-between cursor-pointer"
+        >
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold">
+                {exeDownloaded ? '✓ Downloaded!' : 'Download Windows .EXE'}
+              </span>
+              <Download className="w-4 h-4 shrink-0" />
+            </div>
+            <div className="text-[11px] text-sky-100 mt-1 leading-snug">
+              Standalone 64-bit executable (72 MB). Double-click to run on Windows 10/11.
+            </div>
+          </div>
+          <div className="mt-3 text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded w-fit">
+            Native Offline EXE
+          </div>
+        </button>
+
+        {/* PWA App Install card */}
         <button
           type="button"
           onClick={() => {
@@ -220,33 +304,44 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
               setShowModal(true);
             }
           }}
-          className="p-3 bg-white dark:bg-slate-800 border border-sky-300 dark:border-sky-800 hover:bg-sky-50/50 rounded-xl text-left transition-colors flex items-center justify-between cursor-pointer"
+          className="p-3.5 bg-white dark:bg-slate-800 border border-sky-300 dark:border-sky-800 hover:bg-sky-50/50 rounded-xl text-left transition-colors flex flex-col justify-between cursor-pointer"
         >
           <div>
-            <div className="text-xs font-bold text-sky-900 dark:text-sky-200">
-              {isInstallable ? 'Install as Windows App' : 'View Installation Setup'}
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-sky-900 dark:text-sky-200">
+                {isInstallable ? 'Install Browser App' : 'Desktop App Setup'}
+              </span>
+              <ExternalLink className="w-4 h-4 text-sky-600 shrink-0" />
             </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Adds Desktop icon &amp; runs in full app window
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+              Adds Desktop icon &amp; runs in full app window without browser bars.
             </div>
           </div>
-          <ExternalLink className="w-4 h-4 text-sky-600 shrink-0 ml-2" />
+          <div className="mt-3 text-[10px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400 bg-sky-100 dark:bg-sky-900/60 px-2 py-0.5 rounded w-fit">
+            Browser PWA
+          </div>
         </button>
 
+        {/* Launcher script download */}
         <button
           type="button"
           onClick={handleDownloadLauncher}
-          className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 rounded-xl text-left transition-colors flex items-center justify-between cursor-pointer"
+          className="p-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 rounded-xl text-left transition-colors flex flex-col justify-between cursor-pointer"
         >
           <div>
-            <div className="text-xs font-bold text-slate-900 dark:text-white">
-              {downloadSuccess ? 'Downloaded!' : 'Download Windows Launcher (.bat)'}
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-900 dark:text-white">
+                {downloadSuccess ? 'Downloaded!' : 'Download Launcher (.bat)'}
+              </span>
+              <Download className="w-4 h-4 text-slate-600 shrink-0" />
             </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Includes auto shortcut generator &amp; app runner
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+              Batch script to auto-generate desktop shortcut &amp; launch kiosk.
             </div>
           </div>
-          <Download className="w-4 h-4 text-slate-600 shrink-0 ml-2" />
+          <div className="mt-3 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded w-fit">
+            Batch Script
+          </div>
         </button>
       </div>
 

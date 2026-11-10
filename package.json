@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
+    "build:exe": "node scripts/build-windows-exe.mjs",
     "start": "node server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
