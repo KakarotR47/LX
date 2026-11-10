@@ -16,7 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const IS_PKG = Boolean((process as any).pkg);
-const APP_DATA_DIR = IS_PKG ? path.dirname(process.execPath) : __dirname;
+const APP_DATA_DIR = process.env.APP_DATA_DIR || (IS_PKG ? path.dirname(process.execPath) : __dirname);
 
 // Ensure local hard drive database directory exists on shop computer
 const LOCAL_DB_DIR = path.resolve(APP_DATA_DIR, 'local_database');
@@ -251,27 +251,61 @@ app.post('/api/prepare-print-slip', (req, res) => {
 });
 
 // Windows Standalone Executable Download Routes
+// Windows Standalone Executable Download Routes
 const sendWindowsExe = (_req: express.Request, res: express.Response) => {
   const candidatePaths = [
-    path.resolve(__dirname, 'SA_Brothers_Vendors_POS.exe'),
     path.resolve(__dirname, 'public', 'download', 'SA_Brothers_Vendors_POS.exe'),
-    path.resolve(__dirname, 'public', 'SA_Brothers_Vendors_POS.exe'),
+    path.resolve(__dirname, 'SA_Brothers_Vendors_POS.exe'),
     path.resolve(__dirname, 'dist', 'SA_Brothers_Vendors_POS.exe'),
+    path.resolve(__dirname, 'public', 'SA_Brothers_Vendors_POS.exe'),
     path.resolve(process.cwd(), 'SA_Brothers_Vendors_POS.exe'),
+    path.resolve(process.cwd(), 'test_compressed.exe'),
   ];
   const exePath = candidatePaths.find((p) => fs.existsSync(p));
   if (exePath) {
+    const stat = fs.statSync(exePath);
     res.setHeader('Content-Type', 'application/vnd.microsoft.portable-executable');
-    res.setHeader('Content-Disposition', 'attachment; filename="SA_Brothers_Vendors_POS.exe"');
-    res.download(exePath, 'SA_Brothers_Vendors_POS.exe');
+    res.setHeader('Content-Length', stat.size);
+    res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.download(exePath, 'SA_Brothers_Vendors_POS.exe', (err) => {
+      if (err && !res.headersSent) {
+        console.error('Download stream error:', err);
+      }
+    });
   } else {
-    res.status(404).send('Executable is being compiled. Please try again in a few moments.');
+    res.status(503).send('Executable is being prepared. Please refresh in a few seconds.');
   }
 };
 
 app.get('/download/SA_Brothers_Vendors_POS.exe', sendWindowsExe);
+app.get('/download/SA_Brothers_Vendors_POS_Setup.exe', sendWindowsExe);
 app.get('/SA_Brothers_Vendors_POS.exe', sendWindowsExe);
+app.get('/SA_Brothers_Vendors_POS_Setup.exe', sendWindowsExe);
 app.get('/api/download-exe', sendWindowsExe);
+
+// Windows Portable Desktop Application ZIP Download Route
+const sendWindowsZip = (_req: express.Request, res: express.Response) => {
+  const candidatePaths = [
+    path.resolve(__dirname, 'SA_Brothers_Vendors_POS_Windows.zip'),
+    path.resolve(__dirname, 'public', 'download', 'SA_Brothers_Vendors_POS_Windows.zip'),
+    path.resolve(__dirname, 'public', 'SA_Brothers_Vendors_POS_Windows.zip'),
+    path.resolve(__dirname, 'dist', 'SA_Brothers_Vendors_POS_Windows.zip'),
+    path.resolve(process.cwd(), 'SA_Brothers_Vendors_POS_Windows.zip'),
+  ];
+  const zipPath = candidatePaths.find((p) => fs.existsSync(p));
+  if (zipPath) {
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="SA_Brothers_Vendors_POS_Windows.zip"');
+    res.download(zipPath, 'SA_Brothers_Vendors_POS_Windows.zip');
+  } else {
+    res.status(404).send('ZIP package is being prepared. Please try again in a few moments.');
+  }
+};
+
+app.get('/download/SA_Brothers_Vendors_POS_Windows.zip', sendWindowsZip);
+app.get('/SA_Brothers_Vendors_POS_Windows.zip', sendWindowsZip);
+app.get('/api/download-zip', sendWindowsZip);
 
 app.get('/print-slip/:receiptNumber', (req, res) => {
   const { receiptNumber } = req.params;
@@ -460,41 +494,90 @@ async function startServer() {
     }
   });
 
-  const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server listening on http://0.0.0.0:${PORT}`);
-    if (IS_PKG) {
-      console.log('========================================================================');
-      console.log('    SA BROTHERS VENDORS - POINT OF SALE WINDOWS DESKTOP SOFTWARE        ');
-      console.log(`    Running locally on Windows PC at: http://localhost:${PORT}          `);
-      console.log(`    Local Database: ${LOCAL_DB_DIR}                                     `);
-      console.log('    Minimize this console window while using the application.           ');
-      console.log('========================================================================');
-      import('child_process').then(({ exec }) => {
-        const appUrl = `http://localhost:${PORT}`;
-        exec(`start msedge --app="${appUrl}" || start chrome --app="${appUrl}" || start "" "${appUrl}"`, (err) => {
-          if (err) exec(`start "" "${appUrl}"`);
-        });
-      }).catch(() => {});
-    }
-  });
+  const HOST = process.env.ELECTRON_RUN === 'true' ? '127.0.0.1' : '0.0.0.0';
 
-  server.on('error', (err: any) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error(`[Error] Port ${PORT} is already in use. Please terminate any conflicting processes.`);
-      process.exit(1);
-    } else {
-      console.error('[Error] Server encountered an error:', err);
-      process.exit(1);
-    }
-  });
+  function launchWindowsAppWindow(port: number) {
+    const url = `http://127.0.0.1:${port}`;
+    const programFilesX86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+    const programFiles = process.env.ProgramFiles || 'C:\\Program Files';
+    const localAppData = process.env.LOCALAPPDATA || '';
+
+    const browserCandidates = [
+      path.join(programFilesX86, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+      path.join(programFiles, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+      path.join(localAppData, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+      path.join(programFiles, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(programFilesX86, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(localAppData, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    ];
+
+    const foundPath = browserCandidates.find((candidate) => {
+      try {
+        return fs.existsSync(candidate);
+      } catch {
+        return false;
+      }
+    });
+
+    import('child_process').then(({ spawn, exec }) => {
+      if (foundPath) {
+        console.log(`[OK] Opening POS standalone application window: ${foundPath}`);
+        const child = spawn(foundPath, [`--app=${url}`, '--window-size=1440,900'], {
+          detached: true,
+          stdio: 'ignore',
+        });
+        child.unref();
+      } else {
+        console.log(`[INFO] Opening default browser at ${url}`);
+        exec(`cmd.exe /c start "" "${url}"`);
+      }
+    }).catch(() => {});
+  }
+
+  let activeServer: any = null;
+
+  function startListening(portToTry: number) {
+    const srv = app.listen(portToTry, HOST, () => {
+      console.log(`Server listening on http://${HOST}:${portToTry}`);
+      activeServer = srv;
+      if (IS_PKG && process.env.ELECTRON_RUN !== 'true') {
+        console.log('========================================================================');
+        console.log('    SA BROTHERS VENDORS - POINT OF SALE WINDOWS DESKTOP SOFTWARE        ');
+        console.log(`    Running locally on Windows PC at: http://localhost:${portToTry}     `);
+        console.log(`    Local Database: ${LOCAL_DB_DIR}                                     `);
+        console.log('    Minimize this console window while using the application.           ');
+        console.log('========================================================================');
+        launchWindowsAppWindow(portToTry);
+      }
+    });
+
+    srv.on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE' && IS_PKG && portToTry < 3015) {
+        console.log(`Port ${portToTry} is in use, automatically trying port ${portToTry + 1}...`);
+        startListening(portToTry + 1);
+      } else if (err.code === 'EADDRINUSE') {
+        console.error(`[Error] Port ${portToTry} is already in use.`);
+        process.exit(1);
+      } else {
+        console.error('[Error] Server encountered an error:', err);
+        process.exit(1);
+      }
+    });
+  }
+
+  startListening(PORT);
 
   const shutdown = () => {
-    if ((server as any).closeAllConnections) {
-      (server as any).closeAllConnections();
+    if (activeServer && (activeServer as any).closeAllConnections) {
+      (activeServer as any).closeAllConnections();
     }
-    server.close(() => {
+    if (activeServer) {
+      activeServer.close(() => {
+        process.exit(0);
+      });
+    } else {
       process.exit(0);
-    });
+    }
   };
 
   process.on('SIGTERM', shutdown);

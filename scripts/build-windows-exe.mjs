@@ -20,16 +20,21 @@ const pkgConfig = {
   pkg: {
     assets: [
       'dist/**/*',
-      'public/**/*',
-      'local_database/**/*'
+      'local_database/**/*',
+      'public/manifest.json',
+      'public/pwa-*.png',
+      'public/icon.svg',
+      'public/apple-touch-icon.png',
+      'public/sw.js',
+      'public/windows-launcher/**/*'
     ]
   }
 };
 fs.writeFileSync('package-exe.json', JSON.stringify(pkgConfig, null, 2), 'utf8');
 
-console.log('===> [3/4] Compiling native Windows .exe using pkg (node22-win-x64)...');
+console.log('===> [3/4] Compiling native Windows .exe using pkg (node22-win-x64, GZip compressed)...');
 execSync(
-  'npx @yao-pkg/pkg -c package-exe.json -t node22-win-x64 server-prod.cjs -o SA_Brothers_Vendors_POS.exe',
+  'npx @yao-pkg/pkg -c package-exe.json -t node22-win-x64 --compress GZip server-prod.cjs -o SA_Brothers_Vendors_POS.exe',
   { stdio: 'inherit' }
 );
 

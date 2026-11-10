@@ -10,7 +10,21 @@ echo.
 
 cd /d "%~dp0"
 
-:: 1. If standalone Windows exe exists, run it directly!
+:: 1. If native Windows desktop app exists, run it directly!
+if exist "release\SA_Brothers_Vendors_POS-win32-x64\SA_Brothers_Vendors_POS.exe" (
+    echo [OK] Found native Windows desktop application!
+    echo [INFO] Opening SA Brothers Vendors POS window...
+    start "" "release\SA_Brothers_Vendors_POS-win32-x64\SA_Brothers_Vendors_POS.exe"
+    exit /b 0
+)
+
+if exist "SA_Brothers_Vendors_POS_Setup.exe" (
+    echo [OK] Found SA_Brothers_Vendors_POS_Setup.exe!
+    echo [INFO] Launching native Windows POS application...
+    start "" "SA_Brothers_Vendors_POS_Setup.exe"
+    exit /b 0
+)
+
 if exist "SA_Brothers_Vendors_POS.exe" (
     echo [OK] Found SA_Brothers_Vendors_POS.exe!
     echo [INFO] Launching native Windows POS application...
