@@ -1,0 +1,52 @@
+================================================================================
+   SA BROTHERS VENDORS - WINDOWS SOFTWARE & .EXE CONVERSION GUIDE
+================================================================================
+
+This guide provides 3 easy ways to run and package this software as a native
+Windows executable (.exe) on your shop computer:
+
+--------------------------------------------------------------------------------
+METHOD 1: ONE-CLICK NATIVE WINDOWS APP INSTALLATION (RECOMMENDED)
+--------------------------------------------------------------------------------
+1. Open the POS software in Microsoft Edge or Google Chrome on your Windows PC:
+   http://localhost:3000
+2. In the top navigation bar of the POS, click:
+   "Install as Windows App"
+   OR in Edge/Chrome's address bar, click the [Install App] icon.
+3. Click "Install".
+4. Windows will automatically create:
+   - A desktop shortcut icon on your Windows Desktop
+   - A Start Menu tile and Taskbar pinning option
+   - An isolated application window (no URL bar, no tabs) that looks and behaves
+     identically to a native Windows .exe software!
+
+--------------------------------------------------------------------------------
+METHOD 2: CONVERT TO STANDALONE .EXE USING BUILT-IN WINDOWS IEXPRESS
+--------------------------------------------------------------------------------
+Every copy of Windows (Windows 10, 11, 7, 8) has a built-in executable compiler
+called "IExpress":
+1. Press [Windows Key + R] on your keyboard to open the Run prompt.
+2. Type: iexpress  and press Enter.
+3. Choose "Create new Self Extraction Directive file" -> Click Next.
+4. Select "Extract files and run an installation command" -> Click Next.
+5. Package title: SA Brothers Vendors POS -> Click Next.
+6. Confirmation prompt: No prompt -> Click Next.
+7. License agreement: Do not display a license -> Click Next.
+8. Packaged files: Click [Add] and choose "launch_sa_brothers_pos.bat" -> Click Next.
+9. Install Program:
+   Install Program: cmd /c launch_sa_brothers_pos.bat
+   Post Install Command: <None> -> Click Next.
+10. Show window: Hidden -> Click Next.
+11. Finished message: No message -> Click Next.
+12. Package Name and Options:
+    Browse to your Desktop and name it: "SA_Brothers_POS.exe" -> Click Next.
+13. Click Next -> Finish!
+You now have a true standalone "SA_Brothers_POS.exe" on your Windows desktop!
+
+--------------------------------------------------------------------------------
+METHOD 3: USING DOUBLE-CLICK BATCH LAUNCHER (.BAT)
+--------------------------------------------------------------------------------
+Simply double-click "launch_sa_brothers_pos.bat". It will:
+- Check that the local database and server are running
+- Automatically generate a Desktop Shortcut named "SA Brothers Vendors POS.lnk"
+- Launch the application full-screen in standalone app mode!

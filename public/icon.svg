@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="goldGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="60%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </radialGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <circle cx="256" cy="256" r="210" fill="none" stroke="url(#goldGrad)" stroke-width="14"/>
+  <circle cx="256" cy="256" r="185" fill="#0f172a" stroke="url(#goldGrad)" stroke-width="4"/>
+  
+  <!-- Scales of Justice -->
+  <path d="M256 120 V380" stroke="url(#goldGrad)" stroke-width="12" stroke-linecap="round"/>
+  <path d="M190 380 H322" stroke="url(#goldGrad)" stroke-width="14" stroke-linecap="round"/>
+  <path d="M160 170 H352" stroke="url(#goldGrad)" stroke-width="10" stroke-linecap="round"/>
+  
+  <!-- Left Pan -->
+  <path d="M160 170 L110 260" stroke="#fef08a" stroke-width="4"/>
+  <path d="M160 170 L210 260" stroke="#fef08a" stroke-width="4"/>
+  <path d="M100 260 Q160 300 220 260 Z" fill="url(#goldGrad)"/>
+  
+  <!-- Right Pan -->
+  <path d="M352 170 L302 260" stroke="#fef08a" stroke-width="4"/>
+  <path d="M352 170 L402 260" stroke="#fef08a" stroke-width="4"/>
+  <path d="M292 260 Q352 300 412 260 Z" fill="url(#goldGrad)"/>
+  
+  <!-- Central Emblem Top -->
+  <circle cx="256" cy="120" r="16" fill="url(#goldGrad)"/>
+</svg>
