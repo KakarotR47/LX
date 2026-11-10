@@ -250,16 +250,28 @@ app.post('/api/prepare-print-slip', (req, res) => {
   }
 });
 
-// Windows Standalone Executable Download Route
-app.get('/download/SA_Brothers_Vendors_POS.exe', (_req, res) => {
-  const exePath = path.resolve(__dirname, 'public', 'download', 'SA_Brothers_Vendors_POS.exe');
-  if (fs.existsSync(exePath)) {
+// Windows Standalone Executable Download Routes
+const sendWindowsExe = (_req: express.Request, res: express.Response) => {
+  const candidatePaths = [
+    path.resolve(__dirname, 'SA_Brothers_Vendors_POS.exe'),
+    path.resolve(__dirname, 'public', 'download', 'SA_Brothers_Vendors_POS.exe'),
+    path.resolve(__dirname, 'public', 'SA_Brothers_Vendors_POS.exe'),
+    path.resolve(__dirname, 'dist', 'SA_Brothers_Vendors_POS.exe'),
+    path.resolve(process.cwd(), 'SA_Brothers_Vendors_POS.exe'),
+  ];
+  const exePath = candidatePaths.find((p) => fs.existsSync(p));
+  if (exePath) {
     res.setHeader('Content-Type', 'application/vnd.microsoft.portable-executable');
+    res.setHeader('Content-Disposition', 'attachment; filename="SA_Brothers_Vendors_POS.exe"');
     res.download(exePath, 'SA_Brothers_Vendors_POS.exe');
   } else {
     res.status(404).send('Executable is being compiled. Please try again in a few moments.');
   }
-});
+};
+
+app.get('/download/SA_Brothers_Vendors_POS.exe', sendWindowsExe);
+app.get('/SA_Brothers_Vendors_POS.exe', sendWindowsExe);
+app.get('/api/download-exe', sendWindowsExe);
 
 app.get('/print-slip/:receiptNumber', (req, res) => {
   const { receiptNumber } = req.params;
@@ -459,8 +471,8 @@ async function startServer() {
       console.log('========================================================================');
       import('child_process').then(({ exec }) => {
         const appUrl = `http://localhost:${PORT}`;
-        exec(`start msedge --app="${appUrl}"`, (err) => {
-          if (err) exec(`start ${appUrl}`);
+        exec(`start msedge --app="${appUrl}" || start chrome --app="${appUrl}" || start "" "${appUrl}"`, (err) => {
+          if (err) exec(`start "" "${appUrl}"`);
         });
       }).catch(() => {});
     }

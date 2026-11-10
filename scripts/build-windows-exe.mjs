@@ -40,7 +40,20 @@ if (!fs.existsSync(downloadDir)) {
 }
 
 if (fs.existsSync('SA_Brothers_Vendors_POS.exe')) {
-  fs.renameSync('SA_Brothers_Vendors_POS.exe', path.resolve(downloadDir, 'SA_Brothers_Vendors_POS.exe'));
+  // Sync to public download folder
+  fs.copyFileSync('SA_Brothers_Vendors_POS.exe', path.resolve(downloadDir, 'SA_Brothers_Vendors_POS.exe'));
+  // Sync to public root
+  fs.copyFileSync('SA_Brothers_Vendors_POS.exe', path.resolve('./public', 'SA_Brothers_Vendors_POS.exe'));
+  // Sync to dist
+  const distDir = path.resolve('./dist');
+  if (fs.existsSync(distDir)) {
+    fs.copyFileSync('SA_Brothers_Vendors_POS.exe', path.resolve(distDir, 'SA_Brothers_Vendors_POS.exe'));
+  }
+  // Sync to build
+  const buildDir = path.resolve('./build');
+  if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir, { recursive: true });
+  fs.copyFileSync('SA_Brothers_Vendors_POS.exe', path.resolve(buildDir, 'SA_Brothers_Vendors_POS.exe'));
+  console.log('[SUCCESS] SA_Brothers_Vendors_POS.exe placed in root, dist/, build/, and public/download/');
 }
 
 // Clean up intermediate build artifacts

@@ -64,14 +64,34 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 't
   if (variant === 'topbar') {
     return (
       <>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
-          title="Download Windows Native Executable (.exe) or Install App"
-        >
-          <Laptop className="w-3.5 h-3.5" />
-          <span>Windows .EXE App</span>
-        </button>
+        <div className="flex items-center rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 shadow-xs border border-sky-400/30 overflow-hidden">
+          <button
+            onClick={handleDownloadExe}
+            disabled={exeDownloading}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-white hover:bg-white/10 text-xs font-bold transition-all cursor-pointer active:scale-95"
+            title="1-Click Download Standalone Windows .EXE"
+          >
+            {exeDownloaded ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-300" />
+                <span>Downloaded!</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5" />
+                <span>{exeDownloading ? 'Downloading...' : 'Download .EXE'}</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-2 py-1.5 text-white/80 hover:text-white hover:bg-white/15 border-l border-white/20 text-xs font-bold transition-all cursor-pointer"
+            title="Windows App Options & Setup Guide"
+            aria-label="Windows App Options"
+          >
+            <Laptop className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
         {/* Windows Software Modal */}
         {showModal && (

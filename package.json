@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build",
+    "build": "vite build && node scripts/postbuild.mjs",
+    "postbuild": "node scripts/postbuild.mjs",
     "build:exe": "node scripts/build-windows-exe.mjs",
     "start": "node server.ts",
     "preview": "vite preview",

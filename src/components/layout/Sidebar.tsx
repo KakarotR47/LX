@@ -22,6 +22,8 @@ import {
   ShieldCheck,
   UserCheck,
   LogOut,
+  Laptop,
+  Download,
 } from 'lucide-react';
 import saBrothersLogo from '../../assets/images/sa_brothers_logo.jpg';
 
@@ -373,8 +375,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* Bottom Section: Cashier Status & Theme Toggle */}
-        <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2 bg-slate-50/50 dark:bg-slate-900/50">
+        {/* Bottom Section: Cashier Status, Windows App & Theme Toggle */}
+        <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 bg-slate-50/50 dark:bg-slate-900/50">
+          {/* Windows .EXE Direct Download Link */}
+          <a
+            href="/download/SA_Brothers_Vendors_POS.exe"
+            download="SA_Brothers_Vendors_POS.exe"
+            className="flex items-center justify-between p-2 rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 hover:from-sky-100 hover:to-indigo-100 dark:from-sky-950/40 dark:to-indigo-950/40 dark:hover:from-sky-900/40 dark:hover:to-indigo-900/40 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-200 text-xs font-bold transition-all shadow-2xs group"
+            title="Download standalone SA_Brothers_Vendors_POS.exe for Windows 10/11"
+          >
+            <div className="flex items-center gap-2">
+              <Laptop className="w-4 h-4 text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform" />
+              <div className="text-left">
+                <div className="text-[11px] font-bold">Windows App (.exe)</div>
+                <div className="text-[9px] text-slate-500 dark:text-slate-400 font-normal">Offline Desktop Software</div>
+              </div>
+            </div>
+            <Download className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+          </a>
+
           {/* Active Cashier Status & Dark Mode */}
           <div className="flex items-center justify-between text-xs px-1 pt-0.5">
             <div className="flex items-center gap-2 min-w-0">
